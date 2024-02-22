@@ -1,6 +1,6 @@
 const router = require('express').Router();
-const joyasRouter = require('./rutasJoyas/rutasJoyas');
+const rutassoftjobs = require('./rutas/rutassoftjobs');
 
-router.use('/joyas', joyasRouter);
+router.use('/softjobs', rutassoftjobs);
 
 module.exports = router;
