@@ -9,11 +9,11 @@ const{
 	registrarUser,
 	loginUser,
 } = require('../../middlewares/middlewares');
-const { controlNewUser } = controlNewUser;
-const { ctrlPostLogin } = ctrlPostLogin;
-const { ctrlgettUser } = ctrlgettUser; 
-router.post('/usuarios', registrarUser, controlNewUser);
-router.post('/login', loginUser, ctrlPostLogin);
-router.get('/usuarios', autenticación, ctrlgettUser);
+const { nuevoUsuario } = controlNewUser;
+const { login } = ctrlPostLogin;
+const { getUsuario } = ctrlgettUser; 
+router.post('/usuarios', registrarUser, nuevoUsuario);
+router.post('/login', loginUser, login);
+router.get('/usuarios', autenticación, getUsuario);
 
 module.exports = router;

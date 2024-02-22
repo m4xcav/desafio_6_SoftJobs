@@ -1,9 +1,8 @@
-const ctrlGetJoyas = require('./ctrlGetjoyas');
-const ctrlGetFiltros = require('./ctrlGetJoyasFiltro');
-const ctrlGetjoyaId = require('./ctrlGetjoyaId');
+const controlgetuser = require('./controlgetuser');
+const controllogin = require('./controllogin');
 const controlNewUser = require('./controlNewUser');
 module.exports = {
 	controlNewUser,
-	ctrlGetFiltros,
-	ctrlGetjoyaId,
+	controllogin,
+	controlgetuser,
 };
