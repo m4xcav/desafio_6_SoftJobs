@@ -1,8 +1,8 @@
 const router = require('express').Router();
 const {
 	controlNewUser,
-	ctrlPostLogin,
-	ctrlgettUser,
+	controllogin,
+	controlgetuser,
 } = require('../../controllers/ctrlindex');
 const{ 
 	autenticación,
@@ -10,8 +10,8 @@ const{
 	loginUser,
 } = require('../../middlewares/middlewares');
 const { nuevoUsuario } = controlNewUser;
-const { login } = ctrlPostLogin;
-const { getUsuario } = ctrlgettUser; 
+const { login } = controllogin;
+const { getUsuario } = controlgetuser; 
 router.post('/usuarios', registrarUser, nuevoUsuario);
 router.post('/login', loginUser, login);
 router.get('/usuarios', autenticación, getUsuario);

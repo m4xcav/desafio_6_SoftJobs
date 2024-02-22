@@ -29,29 +29,52 @@ const autenticación = (req, res, next) => {
 
 const registrarUser = async (req, res, next) => {
 	try {
-		const { email } = req.body;
-		const userExist = await db.query(selectUser, [email]);
-		if (userExist.rowCount) {
+		if (!req.body) {
 			res.status(400).send({
 				status: 'Bad request',
-				msg: 'User already exist',
+				msg: 'Request body is required',
 			});
 		} else {
-			const { password } = req.body;
-			genSalt(10, function (err, salt) {
-				hash(password, salt, function (err, hash) {
-					req.user = {
-						...req.body,
-						passwordHash: hash,
-					};
-					next();
+			const { email, password } = req.body;
+
+			if (!email || !password) {
+				res.status(400).send({
+					status: 'Bad request',
+					msg: 'Email and password are required fields',
 				});
-			});
+			} else {
+				const userExist = await db.query(selectUser, [email]);
+				if (userExist.rowCount) {
+					res.status(400).send({
+						status: 'Bad request',
+						msg: 'User already exists',
+					});
+				} else {
+					if (password.length < 8 || !/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(password)) {
+						res.status(400).send({
+							status: 'Bad request',
+							msg: 'Password must be at least 8 characters long and contain at least 1 special character',
+						});
+					} else {
+						const { password } = req.body;
+						genSalt(10, function (err, salt) {
+							hash(password, salt, function (err, hash) {
+								req.user = {
+									...req.body,
+									passwordHash: hash,
+								};
+								next();
+							});
+						});
+					}
+				}
+			}
 		}
 	} catch (error) {
 		next(error);
 	}
 };
+
 
 const loginUser = async (req, res, next) => {
 	try {
@@ -89,7 +112,9 @@ const loginUser = async (req, res, next) => {
 		next(error);
 	}
 };
+const validarform =  (req, res, next)=>{
 
+}
 module.exports = {
 	autenticación,
 	registrarUser,
