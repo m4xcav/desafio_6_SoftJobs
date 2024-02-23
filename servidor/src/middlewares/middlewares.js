@@ -1,4 +1,4 @@
-const bd = require('../database/dbindex');
+const db = require('../database/dbindex');
 const { genSalt, hash, compare } = require('bcrypt');
 const json = require('jsonwebtoken');
 const { expressjwt } = require('express-jwt');
@@ -6,26 +6,28 @@ const {selectUser } = require('../database/querys/queryindex');
 
 
 const autenticación = (req, res, next) => {
-	try {
-		expressjwt({
-			secret: process.env.JWT_SECRET,
-			algorithms: ['HS256'],
-		}).unless({
-			path: [
-				{
-					url: '/login',
-					methods: ['POST', 'OPTIONS'],
-				},
-				{
-					url: '/usuarios',
-					methods: ['POST', 'OPTIONS'],
-				},
-			],
-		})(req, res, next);
-	} catch (error) {
-		throw new Error(error);
+	const token = req.headers.authorization?.split(' ')[1];
+  
+	if (!token) {
+	  return res.status(401).json({ error: 'No token provided' });
 	}
-};
+  
+	try {
+	  const payload = json.verify(token, process.env.JWT_SECRET);
+	  req.email = payload.email;
+	  next();
+	} catch (error) {
+	  if (error instanceof json.TokenExpiredError) {
+		return res.status(401).send({ error: 'Token ha expirado' });
+	  }
+  
+	  if (error instanceof json.JsonWebTokenError) {
+		return res.status(401).send({ error: 'Token o firma no válida' });
+	  }
+  
+	  return res.status(401).send({ error: 'Token no válido' });
+	}
+  };
 
 const registrarUser = async (req, res, next) => {
 	try {
@@ -77,44 +79,42 @@ const registrarUser = async (req, res, next) => {
 
 
 const loginUser = async (req, res, next) => {
-	try {
-		const { email, password } = req.body;
-		const userExist = await db.query( selectUser, [email]);
-		if (!userExist.rowCount) {
-			res.status(400).send({
-				status: 'Bad request',
-				msg: 'User does not exist',
-			});
-		} else {
-			const { id, email, role } = userExist.rows[0];
-			const passwordHash = userExist.rows[0].password;
+    try {
+        const { email, password } = req.body;
+        const userExist = await db.query(selectUser, [email]);
 
-			const match = await compare(password, passwordHash);
-			if (match) {
-				const token = json.sign(
-					{
-						id,
-						role,
-						email,
-					},
-					process.env.JWT_SECRET,
-					{
-						expiresIn: '1h',
-					}
-				);
-				req.token = token;
-				next();
-			} else {
-				res.status(401).send('Credenciales incorrectas');
-			}
-		}
-	} catch (error) {
-		next(error);
-	}
+        if (!userExist.rowCount) {
+            res.status(400).send({
+                status: 'Bad request',
+                msg: 'User does not exist',
+            });
+        } else {
+            const { id, email, role } = userExist.rows[0];
+            const passwordHash = userExist.rows[0].password;
+            const match = await compare(password, passwordHash);
+            if (match) {
+                const token = json.sign(
+                    {
+                        id,
+                        role,
+                        email,
+                    },
+                    process.env.JWT_SECRET,
+                    {
+                        expiresIn: '1h',
+                    }
+                );
+                req.token = token;
+                next();
+            } else {
+                res.status(401).send('Credenciales incorrectas');
+            }
+        }
+    } catch (error) {
+        next(error);
+    }
 };
-const validarform =  (req, res, next)=>{
 
-}
 module.exports = {
 	autenticación,
 	registrarUser,

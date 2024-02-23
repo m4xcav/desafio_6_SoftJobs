@@ -2,15 +2,19 @@ const db = require('../database/dbindex');
 const { selectUser } = require('../database/querys/queryindex');
 
 const getUsuario = async(req, res) =>{
-    const {email} = req.body
+    const {email} = req.params
+    const mail = req.email
  try {
-    const { rowCount, rows } = await db.query(selectUser, [email]);
+    const { rowCount, rows } = await db.query(selectUser, [mail]);
     if (rowCount) {
-        res.status(200).json({
-            msg: 'Data fetch successfuly',
-            dataCount: rowCount,
-            data: rows,
-        });
+        const data = rows[0];
+        const user = {
+            id: data.id,
+            email: data.email,
+            lenguage: data.lenguage,
+            rol: data.rol,
+        };
+        res.status(200).json(user);
     } else {
         res.status(200).json({
             msg: 'No data found',
